@@ -1,233 +1,624 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<title>CET消消乐</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>CET消消乐'</title>
 <style>
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
-  background: linear-gradient(160deg, rgba(120,130,255,0.9), rgba(160,120,255,0.9));
-}
+  :root{
+    --accent: #ffd166;
+    --glass: rgba(255,255,255,0.06);
+    --card: #ffffff;
+    --muted: rgba(255,255,255,0.85);
+    --bg1: rgba(20,24,82,0.95);
+  }
+  html,body{height:100%;margin:0;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",Arial;}
+  body{
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)),
+      radial-gradient(800px 400px at 10% 10%, rgba(99,102,241,0.12), transparent 20%),
+      radial-gradient(900px 500px at 90% 90%, rgba(14,165,233,0.08), transparent 18%),
+      linear-gradient(160deg, #0b1226, #29124a);
+    -webkit-font-smoothing:antialiased;color:var(--muted);
+    display:flex;align-items:center;justify-content:center;padding:20px;
+  }
 
-.page {
-  min-height: 100vh;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-}
+  /* App container */
+  .app {
+    width:100%;
+    max-width:760px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border-radius:18px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    padding:18px;
+    box-sizing:border-box;
+    color:var(--muted);
+  }
 
-.page.active {
-  display: flex;
-}
+  /* Header */
+  header {
+    text-align:center;
+    margin-bottom:14px;
+  }
+  header h1 {
+    margin:6px 0;
+    color:var(--accent);
+    font-size:34px;
+    letter-spacing:1px;
+  }
+  header p { margin:0;font-size:13px;opacity:0.9 }
 
-.container {
-  width: 90%;
-  max-width: 420px;
-  text-align: center;
-}
+  /* Layout: two columns on large screens */
+  .layout{
+    display:grid;
+    grid-template-columns: 360px 1fr;
+    gap:18px;
+  }
+  @media (max-width:820px){
+    .layout{grid-template-columns:1fr;}
+  }
 
-h1 {
-  font-size: 36px;
-  margin-bottom: 32px;
-}
+  /* Left: Home / Mode selection (vertical) */
+  .left {
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    align-items:center;
+  }
 
-.mode-btn {
-  background: rgba(255,255,255,0.22);
-  border-radius: 20px;
-  padding: 18px;
-  margin: 14px 0;
-  font-size: 20px;
-  cursor: pointer;
-  transition: 0.2s;
-}
+  .mode-card {
+    width:100%;
+    background:var(--glass);
+    border-radius:12px;
+    padding:14px;
+    text-align:center;
+    cursor:pointer;
+    transition:transform .18s, box-shadow .18s;
+    border:1px solid rgba(255,255,255,0.03);
+  }
+  .mode-card:hover{ transform:translateY(-6px); box-shadow:0 18px 40px rgba(0,0,0,0.45) }
 
-.mode-btn:hover {
-  transform: scale(1.05);
-  background: rgba(255,255,255,0.35);
-}
+  .mode-title { font-size:18px;color:var(--accent); font-weight:700 }
+  .mode-desc { font-size:13px; opacity:0.95; margin-top:6px }
 
-.small-btn {
-  margin-top: 12px;
-  font-size: 14px;
-  opacity: 0.8;
-  cursor: pointer;
-}
+  /* Library selector and small controls */
+  .lib-select { display:flex; gap:8px; justify-content:center; margin-bottom:8px;}
+  .lib-btn {
+    padding:8px 12px;border-radius:10px;border:0;background:transparent;color:var(--muted);cursor:pointer;
+    border:1px solid rgba(255,255,255,0.04)
+  }
+  .lib-btn.active{ background:var(--accent); color:#0b1226; font-weight:700 }
 
-.panel {
-  background: rgba(255,255,255,0.2);
-  border-radius: 20px;
-  padding: 16px;
-}
+  /* Right: Game area */
+  .right {
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
 
-.info {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 10px;
-}
+  .panel {
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border-radius:12px;
+    padding:14px;
+    min-height:320px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.02);
+  }
 
-.board {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
+  .controls {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:8px;
+    margin-bottom:10px;
+  }
 
-.card {
-  background: #ffe28a;
-  color: #333;
-  padding: 14px;
-  border-radius: 14px;
-  cursor: pointer;
-}
+  .btn {
+    padding:10px 12px;
+    border-radius:10px;
+    border:0;
+    cursor:pointer;
+    font-weight:700;
+  }
+  .btn.primary { background:var(--accent); color:#081823 }
+  .btn.ghost { background:transparent; border:1px solid rgba(255,255,255,0.06); color:var(--muted) }
 
-.card.active {
-  outline: 3px solid #fff;
-}
+  .status { font-size:14px; }
+
+  /* Board */
+  .board {
+    display:grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap:12px;
+  }
+  @media (max-width:640px){
+    .board{ grid-template-columns: repeat(2, 1fr); }
+  }
+
+  .card {
+    background: var(--card);
+    color: #082028;
+    border-radius:12px;
+    padding:12px;
+    text-align:center;
+    font-weight:700;
+    cursor:pointer;
+    user-select:none;
+    box-shadow: 0 8px 20px rgba(2,6,23,0.12);
+    transition: transform .12s, opacity .25s;
+  }
+  .card.active{ transform: scale(1.04); box-shadow:0 18px 36px rgba(0,0,0,0.25) }
+  .card.hidden{ opacity:0; transform: scale(.6); pointer-events:none }
+
+  .footer { text-align:center; margin-top:10px; font-size:13px; opacity:0.85 }
+
+  .small { font-size:12px; opacity:0.85; color:rgba(255,255,255,0.9) }
+
+  /* nice hint / toast */
+  .toast {
+    position:fixed; left:50%; transform:translateX(-50%); bottom:28px;
+    background:rgba(0,0,0,0.7); color:#fff; padding:8px 12px; border-radius:10px; display:none;
+  }
 </style>
 </head>
-
 <body>
+  <div class="app" role="application" aria-label="CET消消乐 应用">
 
-<!-- 首页 -->
-<div class="page active" id="home">
-  <div class="container">
-    <h1>CET消消乐</h1>
+    <header>
+      <h1>CET消消乐'</h1>
+      <p>关卡闯关 · 沉浸/迎战/复仇 · 分享邀请 · 错词复习</p>
+    </header>
 
-    <div class="mode-btn" onclick="enterMode('study')">沉浸局</div>
-    <div class="mode-btn" onclick="enterMode('battle')">迎战局</div>
-    <div class="mode-btn" onclick="enterMode('revenge')">复仇局</div>
-  </div>
-</div>
+    <div class="layout">
 
-<!-- 模式说明页 -->
-<div class="page" id="mode">
-  <div class="container panel">
-    <h2 id="modeTitle"></h2>
-    <p id="modeDesc"></p>
+      <!-- LEFT: Mode selection + library toggles -->
+      <section class="left" aria-label="模式选择区">
+        <div class="lib-select" role="tablist" aria-label="词库选择">
+          <button id="btnCET4" class="lib-btn active" onclick="switchLib('cet4')">CET-4</button>
+          <button id="btnCET6" class="lib-btn" onclick="switchLib('cet6')">CET-6</button>
+        </div>
 
-    <div class="mode-btn" onclick="startGame()">▶ 开始游戏</div>
-    <div class="small-btn" onclick="goHome()">← 返回首页</div>
-  </div>
-</div>
+        <div class="mode-card" onclick="chooseMode('immerse')">
+          <div class="mode-title">🧘‍♂️ 沉浸局</div>
+          <div class="mode-desc">放松练习，逐个认识词义与搭配（轻松模式）</div>
+        </div>
 
-<!-- 游戏页 -->
-<div class="page" id="game">
-  <div class="container panel">
-    <div class="info">
-      <div>得分：<span id="score">0</span></div>
-      <div>剩余：<span id="left">0</span></div>
+        <div class="mode-card" onclick="chooseMode('battle')">
+          <div class="mode-title">⚔️ 迎战局</div>
+          <div class="mode-desc">计分挑战并记录错词，可邀请同学来挑战（竞赛模式）</div>
+        </div>
+
+        <div class="mode-card" onclick="chooseMode('revenge')">
+          <div class="mode-title">🔥 复仇局</div>
+          <div class="mode-desc">专攻错词本：只用你之前错过的词来复习（强化模式）</div>
+        </div>
+
+        <div style="width:100%;margin-top:8px;text-align:center">
+          <button class="btn ghost" onclick="openWrongBook()">查看错词本</button>
+        </div>
+      </section>
+
+      <!-- RIGHT: Game area -->
+      <section class="right">
+        <div class="panel">
+
+          <div class="controls">
+            <div>
+              <span class="small">模式：</span>
+              <strong id="modeLabel">—</strong>
+              <span style="margin-left:12px" class="small">关卡：</span>
+              <select id="levelSelect" onchange="changeLevel()" aria-label="关卡选择"></select>
+            </div>
+
+            <div style="display:flex;gap:8px;align-items:center">
+              <button id="shareBtn" class="btn ghost" onclick="shareInvite()">📤 邀请/分享</button>
+              <button id="startBtn" class="btn primary" onclick="startLevel()">开始</button>
+            </div>
+          </div>
+
+          <div class="controls" style="margin-top:6px">
+            <div class="status">得分：<strong id="score">0</strong></div>
+            <div class="status">剩余卡：<strong id="left">0</strong></div>
+          </div>
+
+          <div id="board" class="board" aria-live="polite"></div>
+
+        </div>
+
+        <div class="footer">
+          提示：点击英文 / 中文卡片配对消除。通关自动解锁下一关。错词会被记录到错词本。
+        </div>
+      </section>
     </div>
 
-    <div class="board" id="board"></div>
-
-    <div class="mode-btn" onclick="share()">📤 邀请好友</div>
-    <div class="small-btn" onclick="goHome()">← 返回首页</div>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
   </div>
-</div>
 
 <script>
-// 简化词库示例（你可替换为 CET4 / CET6 关卡词库）
-const WORDS = [
-  {en:"abandon", cn:"放弃"},
-  {en:"ability", cn:"能力"},
-  {en:"abstract", cn:"抽象的"},
-  {en:"advocate", cn:"提倡"},
-  {en:"allocate", cn:"分配"},
-  {en:"analysis", cn:"分析"}
-];
+/*
+  最终版游戏主脚本
+  说明：
+  - 需要两个外部文件（已生成或上传）:
+      CET4_levels.js  (定义 window.CET4_LEVELS = {...})
+      CET6_levels.js  (定义 window.CET6_LEVELS = {...})
+    如果你尚未上传，请先创建并粘贴对应内容（之前我已帮你生成示例文件）。
+  - 请移除或忽略旧的 words_cet.js（不要再在 index.html 中引用它）
+*/
 
-let currentMode = "";
-let selected = null;
+/* ---------- 兼容加载与回退（若外部词库缺失，将使用内置示例） ---------- */
+const FALLBACK_CET4 = {
+  "level1":[{en:"book",cn:"书"},{en:"study",cn:"学习"},{en:"school",cn:"学校"},{en:"teacher",cn:"老师"}],
+  "level2":[{en:"ability",cn:"能力"},{en:"accept",cn:"接受"},{en:"achieve",cn:"实现"},{en:"active",cn:"积极的"}]
+};
+const FALLBACK_CET6 = {
+  "level1":[{en:"abstract",cn:"抽象的"},{en:"advocate",cn:"提倡"},{en:"allocate",cn:"分配"},{en:"analogy",cn:"类比"}],
+  "level2":[{en:"ambiguous",cn:"模糊的"},{en:"assumption",cn:"假设"},{en:"diminish",cn:"减少"},{en:"empirical",cn:"经验的"}]
+};
+
+const CET4 = (window.CET4_LEVELS && typeof window.CET4_LEVELS === 'object') ? window.CET4_LEVELS : FALLBACK_CET4;
+const CET6 = (window.CET6_LEVELS && typeof window.CET6_LEVELS === 'object') ? window.CET6_LEVELS : FALLBACK_CET6;
+
+/* ---------- 全局状态 ---------- */
+let LIB_NAME = 'cet4'; // 'cet4' or 'cet6'
+let LEVELS = (LIB_NAME === 'cet4') ? CET4 : CET6;
+let LEVEL_KEYS = Object.keys(LEVELS); // ['level1','level2',...]
+let currentLevelKey = LEVEL_KEYS[0] || 'level1';
+let MODE = null; // 'immerse' | 'battle' | 'revenge'
 let score = 0;
+let selected = null; // { key, text, el }
+let wrongBook = JSON.parse(localStorage.getItem('cet_wrong')||'[]'); // [{en,cn}]
+let progress = JSON.parse(localStorage.getItem('cet_progress')||'{}'); // {cet4:{level1:true,...}, cet6:{...}}
 
-function show(pageId) {
-  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
-  document.getElementById(pageId).classList.add("active");
+/* ---------- DOM refs ---------- */
+const btnCET4 = document.getElementById('btnCET4');
+const btnCET6 = document.getElementById('btnCET6');
+const modeLabel = document.getElementById('modeLabel');
+const levelSelect = document.getElementById('levelSelect');
+const scoreEl = document.getElementById('score');
+const leftEl = document.getElementById('left');
+const boardEl = document.getElementById('board');
+const startBtn = document.getElementById('startBtn');
+const shareBtn = document.getElementById('shareBtn');
+const toastEl = document.getElementById('toast');
+
+/* ---------- 初始化 UI ---------- */
+function init(){
+  // load library selection UI
+  renderLevelOptions();
+  loadQueryParams(); // support invite links ?mode=battle&level=level2&lib=cet6
+  updateModeLabel();
+  updateLibButtons();
+  updateProgressUI();
+  showToast('就绪 — 选择模式并开始闯关吧！', 1200);
+}
+init();
+
+/* ---------- Utility ---------- */
+function showToast(msg, ms=1200){
+  toastEl.innerText = msg;
+  toastEl.style.display = 'block';
+  setTimeout(()=>{ toastEl.style.display = 'none'; }, ms);
+}
+function shuffle(arr){
+  for(let i=arr.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]] = [arr[j],arr[i]];
+  }
+  return arr;
+}
+function saveWrong(){ localStorage.setItem('cet_wrong', JSON.stringify(wrongBook)); }
+function saveProgress(){ localStorage.setItem('cet_progress', JSON.stringify(progress)); }
+
+/* ---------- Library switching (CET4 / CET6) ---------- */
+function switchLib(lib){
+  if(lib === LIB_NAME) return;
+  LIB_NAME = lib;
+  LEVELS = (LIB_NAME === 'cet4') ? CET4 : CET6;
+  LEVEL_KEYS = Object.keys(LEVELS);
+  currentLevelKey = LEVEL_KEYS[0] || 'level1';
+  renderLevelOptions();
+  updateLibButtons();
+  updateProgressUI();
+  showToast('词库已切换为 ' + (LIB_NAME==='cet4'?'CET-4':'CET-6'), 800);
+}
+function updateLibButtons(){
+  btnCET4.classList.toggle('active', LIB_NAME==='cet4');
+  btnCET6.classList.toggle('active', LIB_NAME==='cet6');
 }
 
-function enterMode(mode) {
-  currentMode = mode;
-  const titles = {
-    study: "沉浸局",
-    battle: "迎战局",
-    revenge: "复仇局"
-  };
-  const descs = {
-    study: "轻松学习，逐步记忆",
-    battle: "限时挑战，比拼手速",
-    revenge: "专消错词，狠狠干掉"
-  };
-  document.getElementById("modeTitle").innerText = titles[mode];
-  document.getElementById("modeDesc").innerText = descs[mode];
-  show("mode");
+/* ---------- Level select render ---------- */
+function renderLevelOptions(){
+  levelSelect.innerHTML = '';
+  LEVEL_KEYS = Object.keys(LEVELS);
+  LEVEL_KEYS.forEach(key=>{
+    const opt = document.createElement('option');
+    opt.value = key;
+    opt.innerText = key.replace('level','第') + ' 关';
+    levelSelect.appendChild(opt);
+  });
+  // try keep currentLevelKey if exists
+  if(!LEVEL_KEYS.includes(currentLevelKey)) currentLevelKey = LEVEL_KEYS[0];
+  levelSelect.value = currentLevelKey;
 }
 
-function startGame() {
-  score = 0;
+/* ---------- Mode selection (from left) ---------- */
+function chooseMode(m){
+  MODE = m;
   selected = null;
-  document.getElementById("score").innerText = score;
-  render();
-  show("game");
+  score = 0; updateScore();
+  updateModeLabel();
+  // show hint: for revenge mode check wrongBook
+  if(MODE === 'revenge' && (!wrongBook || wrongBook.length===0)){
+    startBtn.disabled = true;
+    startBtn.innerText = '错题本为空';
+    showToast('错词本为空 — 先玩迎战局或沉浸局制造错词吧', 1600);
+  } else {
+    startBtn.disabled = false;
+    startBtn.innerText = '开始';
+  }
+  // set level select to chosen level if available
+  renderLevelOptions();
+  // scroll to right area (for small screen)
+  document.getElementById('board').scrollIntoView({behavior:'smooth'});
 }
 
-function render() {
-  const board = document.getElementById("board");
-  board.innerHTML = "";
-
-  const pick = shuffle([...WORDS]).slice(0,3);
-  const cards = [];
-  pick.forEach(w => {
-    cards.push({text:w.en, key:w.en});
-    cards.push({text:w.cn, key:w.en});
-  });
-
-  shuffle(cards).forEach(c => {
-    const div = document.createElement("div");
-    div.className = "card";
-    div.innerText = c.text;
-    div.onclick = () => clickCard(c, div);
-    board.appendChild(div);
-  });
-
-  document.getElementById("left").innerText = cards.length;
+/* ---------- update mode label ---------- */
+function updateModeLabel(){
+  const label = MODE === 'immerse' ? '沉浸局' : MODE === 'battle' ? '迎战局' : MODE === 'revenge' ? '复仇局' : '—';
+  modeLabel.innerText = label;
 }
 
-function clickCard(card, el) {
-  if (!selected) {
-    selected = {card, el};
-    el.classList.add("active");
+/* ---------- handle level select change ---------- */
+function changeLevel(){
+  currentLevelKey = levelSelect.value;
+  selected = null;
+  score = 0; updateScore();
+}
+
+/* ---------- start level ---------- */
+function startLevel(){
+  if(!MODE){
+    showToast('请先在左侧选择一个模式（沉浸 / 迎战 / 复仇）', 1200);
     return;
   }
 
-  if (selected.card.key === card.key && selected.el !== el) {
-    selected.el.remove();
-    el.remove();
-    score++;
-    document.getElementById("score").innerText = score;
+  // Choose word pool
+  let pool = [];
+  if(MODE === 'revenge'){
+    pool = wrongBook.length ? wrongBook.map(w=>({en:w.en,cn:w.cn})) : [];
+    if(pool.length === 0){ showToast('错词本为空',1200); return; }
   } else {
-    selected.el.classList.remove("active");
+    const levelWords = LEVELS[currentLevelKey] || [];
+    pool = shuffle([...levelWords]);
   }
 
-  selected = null;
-  document.getElementById("left").innerText =
-    document.querySelectorAll(".card").length;
+  // Determine number of pairs: base 3, increase with level index
+  const levelIndex = Math.max(1, parseInt(currentLevelKey.replace('level','')) || 1);
+  const pairs = Math.min(3 + Math.floor(levelIndex/1), 8); // cap 8 pairs
+  const pick = pool.slice(0, Math.min(pairs, pool.length));
+
+  // Build card list (each pair -> en and cn)
+  const cards = [];
+  pick.forEach(w=>{
+    cards.push({text:w.en, key:w.en});
+    cards.push({text:w.cn, key:w.en});
+  });
+  shuffle(cards);
+  renderCards(cards);
+  score = 0; updateScore();
+  showToast('开始第 ' + currentLevelKey.replace('level','') + ' 关', 900);
 }
 
-function shuffle(arr) {
-  return arr.sort(() => Math.random() - 0.5);
+/* ---------- render cards ---------- */
+function renderCards(cards){
+  boardEl.innerHTML = '';
+  cards.forEach((c,idx)=>{
+    const div = document.createElement('div');
+    div.className = 'card';
+    div.innerText = c.text;
+    div.dataset.key = c.key;
+    div.dataset.idx = idx;
+    div.onclick = () => onCardClick(c, div);
+    boardEl.appendChild(div);
+  });
+  leftEl.innerText = document.querySelectorAll('.card').length;
 }
 
-function goHome() {
-  show("home");
+/* ---------- card click ---------- */
+function onCardClick(card, el){
+  if(el.classList.contains('hidden')) return;
+  if(!selected){
+    selected = { card, el };
+    el.classList.add('active');
+    return;
+  }
+  // same element -> toggle off
+  if(selected.el === el){
+    selected.el.classList.remove('active'); selected = null; return;
+  }
+
+  if(selected.card.key === card.key){
+    // success: animate hide
+    selected.el.classList.add('hidden');
+    el.classList.add('hidden');
+    // increment score with mode weights
+    const weight = MODE === 'battle' ? 10 : (MODE === 'revenge' ? 5 : 1);
+    score += weight;
+    updateScore();
+    // remove nodes after short delay
+    setTimeout(()=>{
+      try{ if(selected.el.parentNode) selected.el.parentNode.removeChild(selected.el); }catch(e){}
+      try{ if(el.parentNode) el.parentNode.removeChild(el); }catch(e){}
+      selected = null;
+      leftEl.innerText = document.querySelectorAll('.card').length;
+      // if was wrongbook pool and matched, remove from wrongBook
+      if(MODE === 'revenge'){
+        // remove from wrongBook any items with this key
+        wrongBook = wrongBook.filter(w => w.en !== card.key);
+        saveWrong();
+      }
+      // win check
+      if(document.querySelectorAll('.card').length === 0){
+        onLevelComplete();
+      }
+    },220);
+  } else {
+    // fail: record wrong in battle mode
+    if(MODE === 'battle'){
+      const enKey = selected.card.key;
+      // retrieve cn via LEVELS mapping or from selected.card/ card
+      const raw = findWordByEn(enKey);
+      const cnText = raw ? (raw.cn || '') : '';
+      if(enKey && !wrongBook.some(w=>w.en === enKey)){
+        wrongBook.push({en:enKey, cn:cnText});
+        saveWrong();
+      }
+    }
+    // visual feedback
+    selected.el.classList.remove('active');
+    selected = null;
+    showToast('配对错误', 700);
+  }
 }
 
-function share() {
-  alert("已生成分享链接（示意）");
+/* ---------- find original word by english key (in levels or wrong book) ---------- */
+function findWordByEn(en){
+  // search current LEVELS
+  for(const k of Object.keys(LEVELS)){
+    const arr = LEVELS[k];
+    for(const w of arr){
+      if(w.en === en) return w;
+    }
+  }
+  // search wrongBook
+  for(const w of wrongBook){
+    if(w.en === en) return w;
+  }
+  return null;
 }
+
+/* ---------- on level complete ---------- */
+function onLevelComplete(){
+  // mark progress
+  if(!progress[LIB_NAME]) progress[LIB_NAME] = {};
+  progress[LIB_NAME][currentLevelKey] = true;
+  saveProgress();
+  updateProgressUI();
+
+  // try unlock next
+  const idx = LEVEL_KEYS.indexOf(currentLevelKey);
+  const nextKey = LEVEL_KEYS[idx+1];
+  let msg = '本关完成！';
+  if(nextKey){
+    msg += ' 解锁下一关：' + nextKey.replace('level','第') + ' 关';
+    // auto-select next level for convenience
+    currentLevelKey = nextKey;
+    levelSelect.value = currentLevelKey;
+  } else {
+    msg += ' 已完成当前词库所有关卡！';
+  }
+  showToast(msg, 1400);
+}
+
+/* ---------- share / invite functionality ---------- */
+function shareInvite(){
+  // create a share link that encodes current settings
+  const url = new URL(location.href);
+  url.searchParams.set('mode', MODE || 'battle');
+  url.searchParams.set('level', currentLevelKey);
+  url.searchParams.set('lib', LIB_NAME);
+  const shareText = `我在玩 CET消消乐，来挑战我第 ${currentLevelKey.replace('level','')} 关吧！\n${url.toString()}`;
+
+  // navigator.share if available
+  if(navigator.share){
+    navigator.share({ title: 'CET消消乐挑战', text: shareText, url: url.toString() })
+      .catch(()=>{ copyToClipboard(url.toString()); showToast('已复制链接到剪贴板'); });
+  } else {
+    copyToClipboard(url.toString());
+    showToast('已复制邀请链接（粘贴发送）',1200);
+  }
+}
+
+function copyToClipboard(text){
+  try{
+    const ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta);
+    ta.select(); document.execCommand('copy'); ta.remove();
+  }catch(e){
+    // fallback
+    alert('分享链接： ' + text);
+  }
+}
+
+/* ---------- support invite links on page load ---------- */
+function loadQueryParams(){
+  const params = new URLSearchParams(location.search);
+  const m = params.get('mode');
+  const lvl = params.get('level');
+  const lib = params.get('lib');
+  if(lib && (lib==='cet4' || lib==='cet6')) {
+    switchLib(lib);
+  }
+  if(lvl && LEVEL_KEYS.includes(lvl)) currentLevelKey = lvl;
+  if(m && (m==='immerse' || m==='battle' || m==='revenge')){
+    chooseMode(m);
+  }
+  levelSelect.value = currentLevelKey;
+}
+
+/* ---------- update score UI ---------- */
+function updateScore(){ scoreEl.innerText = score; }
+
+/* ---------- update progress UI (mark unlocked) ---------- */
+function updateProgressUI(){
+  // ensure progress object structure
+  if(!progress[LIB_NAME]) progress[LIB_NAME] = {};
+  // reflect unlocked levels in levelSelect (we'll append '*' to unlocked)
+  renderLevelOptions(); // refresh keys
+  // update options text
+  Array.from(levelSelect.options).forEach(opt=>{
+    const key = opt.value;
+    const unlocked = !!(progress[LIB_NAME] && progress[LIB_NAME][key]);
+    opt.innerText = key.replace('level','第') + ' 关' + (unlocked? ' ⭐' : '');
+  });
+}
+
+/* ---------- open wrong book viewer ---------- */
+function openWrongBook(){
+  if(!wrongBook || wrongBook.length===0){
+    alert('错词本为空');
+    return;
+  }
+  const text = wrongBook.map((w,i)=>`${i+1}. ${w.en}\t${w.cn||''}`).join('\n');
+  // show in prompt style (simple)
+  alert('错词本:\n\n' + text);
+}
+
+/* ---------- helper: change lib option when select updated ---------- */
+function renderLevelOptions(){
+  // preserve current selected value if same lib
+  const prev = levelSelect.value;
+  levelSelect.innerHTML = '';
+  LEVEL_KEYS = Object.keys(LEVELS);
+  LEVEL_KEYS.forEach(k=>{
+    const opt = document.createElement('option');
+    opt.value = k;
+    opt.innerText = k.replace('level','第') + ' 关';
+    levelSelect.appendChild(opt);
+  });
+  // set value
+  if(LEVEL_KEYS.includes(prev)) levelSelect.value = prev;
+  else levelSelect.value = LEVEL_KEYS[0] || '';
+}
+
+/* ---------- initialize progress structure if empty ---------- */
+if(!progress.cet4) progress.cet4 = {};
+if(!progress.cet6) progress.cet6 = {};
+saveProgress();
+
+/* ---------- expose some functions for console debugging (optional) ---------- */
+window._CET = {
+  switchLib, chooseMode, startLevel, startGame:startLevel, openWrongBook, exportWrong: ()=>{ alert('导出功能在此演示，需要自行实现'); }
+};
+
 </script>
-
 </body>
 </html>
