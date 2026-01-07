@@ -1,129 +1,231 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>CET 消消乐 · 终极版</title>
+<meta charset="UTF-8">
+<title>CET消消乐</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <style>
-body{
-  margin:0;
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto;
-  background:linear-gradient(135deg,#667eea,#764ba2);
-  color:#fff;
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
+  background: linear-gradient(160deg, rgba(120,130,255,0.9), rgba(160,120,255,0.9));
 }
-header{
-  padding:16px;
-  text-align:center;
-  font-size:22px;
-  font-weight:bold;
+
+.page {
+  min-height: 100vh;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
 }
-#modeSelect{
-  display:flex;
-  gap:12px;
-  justify-content:center;
-  margin:16px;
-  flex-wrap:wrap;
+
+.page.active {
+  display: flex;
 }
-button{
-  padding:12px 18px;
-  border:none;
-  border-radius:12px;
-  background:#fff;
-  color:#333;
-  font-size:16px;
-  cursor:pointer;
+
+.container {
+  width: 90%;
+  max-width: 420px;
+  text-align: center;
 }
-#game{
-  max-width:600px;
-  margin:0 auto;
-  padding:12px;
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:12px;
+
+h1 {
+  font-size: 36px;
+  margin-bottom: 32px;
 }
-.card{
-  background:rgba(255,255,255,0.9);
-  color:#333;
-  border-radius:16px;
-  padding:18px;
-  text-align:center;
-  font-size:18px;
-  cursor:pointer;
-  user-select:none;
+
+.mode-btn {
+  background: rgba(255,255,255,0.22);
+  border-radius: 20px;
+  padding: 18px;
+  margin: 14px 0;
+  font-size: 20px;
+  cursor: pointer;
+  transition: 0.2s;
 }
-.card.active{
-  background:#ffd166;
+
+.mode-btn:hover {
+  transform: scale(1.05);
+  background: rgba(255,255,255,0.35);
 }
-footer{
-  text-align:center;
-  font-size:12px;
-  opacity:0.8;
-  padding:12px;
+
+.small-btn {
+  margin-top: 12px;
+  font-size: 14px;
+  opacity: 0.8;
+  cursor: pointer;
+}
+
+.panel {
+  background: rgba(255,255,255,0.2);
+  border-radius: 20px;
+  padding: 16px;
+}
+
+.info {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.board {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.card {
+  background: #ffe28a;
+  color: #333;
+  padding: 14px;
+  border-radius: 14px;
+  cursor: pointer;
+}
+
+.card.active {
+  outline: 3px solid #fff;
 }
 </style>
 </head>
+
 <body>
 
-<header>🎮 CET 消消乐（H5 终极版）</header>
+<!-- 首页 -->
+<div class="page active" id="home">
+  <div class="container">
+    <h1>CET消消乐</h1>
 
-<div id="modeSelect">
-  <button onclick="startGame('immerse')">🧠 沉浸局</button>
-  <button onclick="startGame('battle')">⚔️ 迎战局</button>
-  <button onclick="startGame('revenge')">🔥 复仇局</button>
+    <div class="mode-btn" onclick="enterMode('study')">沉浸局</div>
+    <div class="mode-btn" onclick="enterMode('battle')">迎战局</div>
+    <div class="mode-btn" onclick="enterMode('revenge')">复仇局</div>
+  </div>
 </div>
 
-<div id="game"></div>
+<!-- 模式说明页 -->
+<div class="page" id="mode">
+  <div class="container panel">
+    <h2 id="modeTitle"></h2>
+    <p id="modeDesc"></p>
 
-<footer>词库：CET 常用词汇｜个人学习娱乐项目</footer>
+    <div class="mode-btn" onclick="startGame()">▶ 开始游戏</div>
+    <div class="small-btn" onclick="goHome()">← 返回首页</div>
+  </div>
+</div>
 
-<script src="words_cet.js"></script>
+<!-- 游戏页 -->
+<div class="page" id="game">
+  <div class="container panel">
+    <div class="info">
+      <div>得分：<span id="score">0</span></div>
+      <div>剩余：<span id="left">0</span></div>
+    </div>
+
+    <div class="board" id="board"></div>
+
+    <div class="mode-btn" onclick="share()">📤 邀请好友</div>
+    <div class="small-btn" onclick="goHome()">← 返回首页</div>
+  </div>
+</div>
+
 <script>
-let first=null;
-let lock=false;
-let pool=[];
+// 简化词库示例（你可替换为 CET4 / CET6 关卡词库）
+const WORDS = [
+  {en:"abandon", cn:"放弃"},
+  {en:"ability", cn:"能力"},
+  {en:"abstract", cn:"抽象的"},
+  {en:"advocate", cn:"提倡"},
+  {en:"allocate", cn:"分配"},
+  {en:"analysis", cn:"分析"}
+];
 
-function startGame(mode){
-  document.getElementById('game').innerHTML='';
-  first=null;lock=false;
-  pool = shuffle([...window.CET_WORDS]).slice(0,6);
-  let cards=[];
-  pool.forEach(w=>{
-    cards.push({text:w.en,key:w.en});
-    cards.push({text:w.cn,key:w.en});
+let currentMode = "";
+let selected = null;
+let score = 0;
+
+function show(pageId) {
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  document.getElementById(pageId).classList.add("active");
+}
+
+function enterMode(mode) {
+  currentMode = mode;
+  const titles = {
+    study: "沉浸局",
+    battle: "迎战局",
+    revenge: "复仇局"
+  };
+  const descs = {
+    study: "轻松学习，逐步记忆",
+    battle: "限时挑战，比拼手速",
+    revenge: "专消错词，狠狠干掉"
+  };
+  document.getElementById("modeTitle").innerText = titles[mode];
+  document.getElementById("modeDesc").innerText = descs[mode];
+  show("mode");
+}
+
+function startGame() {
+  score = 0;
+  selected = null;
+  document.getElementById("score").innerText = score;
+  render();
+  show("game");
+}
+
+function render() {
+  const board = document.getElementById("board");
+  board.innerHTML = "";
+
+  const pick = shuffle([...WORDS]).slice(0,3);
+  const cards = [];
+  pick.forEach(w => {
+    cards.push({text:w.en, key:w.en});
+    cards.push({text:w.cn, key:w.en});
   });
-  shuffle(cards).forEach(c=>createCard(c));
+
+  shuffle(cards).forEach(c => {
+    const div = document.createElement("div");
+    div.className = "card";
+    div.innerText = c.text;
+    div.onclick = () => clickCard(c, div);
+    board.appendChild(div);
+  });
+
+  document.getElementById("left").innerText = cards.length;
 }
 
-function createCard(data){
-  const div=document.createElement('div');
-  div.className='card';
-  div.innerText=data.text;
-  div.onclick=()=>clickCard(div,data);
-  document.getElementById('game').appendChild(div);
-}
-
-function clickCard(el,data){
-  if(lock||el.classList.contains('active'))return;
-  el.classList.add('active');
-  if(!first){
-    first={el,data};
-  }else{
-    if(first.data.key===data.key){
-      first=null;
-    }else{
-      lock=true;
-      setTimeout(()=>{
-        el.classList.remove('active');
-        first.el.classList.remove('active');
-        first=null;
-        lock=false;
-      },700);
-    }
+function clickCard(card, el) {
+  if (!selected) {
+    selected = {card, el};
+    el.classList.add("active");
+    return;
   }
+
+  if (selected.card.key === card.key && selected.el !== el) {
+    selected.el.remove();
+    el.remove();
+    score++;
+    document.getElementById("score").innerText = score;
+  } else {
+    selected.el.classList.remove("active");
+  }
+
+  selected = null;
+  document.getElementById("left").innerText =
+    document.querySelectorAll(".card").length;
 }
 
-function shuffle(arr){
-  return arr.sort(()=>Math.random()-0.5);
+function shuffle(arr) {
+  return arr.sort(() => Math.random() - 0.5);
+}
+
+function goHome() {
+  show("home");
+}
+
+function share() {
+  alert("已生成分享链接（示意）");
 }
 </script>
 
